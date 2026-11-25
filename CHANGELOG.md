@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+- Chat hides the model's reasoning (`<think>`) by default; `--thinking show` displays it.
+- No blank lines before replies.
+- `--version` shows platform and GPU backend.
+
 All notable changes to Solomon CLI are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [0.1.0] - unreleased

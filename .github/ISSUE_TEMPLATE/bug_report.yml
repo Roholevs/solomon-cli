@@ -1,0 +1,29 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "For security issues, do NOT use this form; see SECURITY.md."
+  - type: input
+    id: version
+    attributes: {label: "Solomon CLI version", description: "Output of `solomon --version`"}
+    validations: {required: true}
+  - type: input
+    id: macos
+    attributes: {label: "Mac model and macOS version", placeholder: "MacBook Air M2 16 GB, macOS 15.1"}
+    validations: {required: true}
+  - type: input
+    id: model
+    attributes: {label: "Model file", description: "Name of the .gguf file and a Hugging Face link"}
+  - type: textarea
+    id: command
+    attributes: {label: "Command you ran", render: shell}
+    validations: {required: true}
+  - type: textarea
+    id: actual
+    attributes: {label: "What happened (full output / error)", render: text}
+    validations: {required: true}
+  - type: textarea
+    id: expected
+    attributes: {label: "What you expected"}

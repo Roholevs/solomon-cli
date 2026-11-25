@@ -146,7 +146,7 @@ Run `solomon help` for an overview and `solomon <command> --help` for details. E
 Interactive chat in the terminal. Type a message and press Enter; the reply streams as it is generated. The conversation is remembered until you type `/reset`.
 
 ```
-solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--memory-mib N]
+solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--memory-mib N] [--thinking show|hide]
 ```
 
 | Option | Default | Meaning |
@@ -254,7 +254,7 @@ $ solomon model-info --file Qwen3-0.6B-Q8_0.gguf
 
 **Is the source code available?** No. Solomon is proprietary software; only the binaries are published.
 
-**Windows / Linux?** Yes: x86_64 Linux and Windows, and arm64 Linux. Intel Macs are not supported.
+**Windows / Linux?** Coming in the next release (x86_64 Linux and Windows, arm64 Linux). Intel Macs are not supported.
 
 **Can it use my GPU?** On Macs, yes, the Apple GPU is used automatically. On Linux and Windows it runs on the CPU for now; GPU support there is planned.
 

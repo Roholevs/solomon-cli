@@ -1,0 +1,14 @@
+name: Feature request
+description: Suggest an idea or ask for support for a model
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes: {label: "What would you like to do?", description: "Describe the use case."}
+    validations: {required: true}
+  - type: textarea
+    id: idea
+    attributes: {label: "Proposed solution"}
+  - type: input
+    id: model
+    attributes: {label: "Model (if this is a model support request)", description: "Hugging Face link to the GGUF"}
