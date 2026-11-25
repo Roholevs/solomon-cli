@@ -154,7 +154,7 @@ solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--m
 | `--file` | (required) | Path to the `.gguf` model |
 | `--context` | 8192 | How much of the conversation (in tokens) the model can see |
 | `--max-tokens` | 1024 | Longest reply, in tokens (max 8192) |
-| `--threads` | 4 | CPU threads (1–32) |
+| `--threads` | auto | CPU threads (`auto` = performance cores, or 1–32) |
 | `--memory-mib` | 512 | Memory reserved for the conversation, in MiB |
 
 In-chat commands: `/reset` clears the conversation; `/exit`, `/quit` or Ctrl-D quits.
@@ -220,6 +220,7 @@ $ solomon model-info --file Qwen3-0.6B-Q8_0.gguf
 
 ## Performance tips
 
+- **Automatic memory check.** Before loading, Solomon compares what the model needs with the free memory. If it fits, the model is loaded fully into memory for the best speed; if memory is tight, it prints a short note and reads the model from disk as needed.
 - **Choose the model size for your memory.** A model that doesn't fit in RAM still runs, but it slows down a lot. Keep the model file under about 60% of your computer's memory.
 - **Close memory-hungry apps** (browsers with many tabs, VMs) before you run large models.
 - **Smaller file variants are faster.** If generation is slow, try a smaller variant or a smaller model.
@@ -227,6 +228,19 @@ $ solomon model-info --file Qwen3-0.6B-Q8_0.gguf
 - If you only need short chats, a lower `--context` saves memory.
 - Use `solomon bench` to compare models on your computer.
 - On Linux and Windows (CPU), `--threads` set to the number of *physical* cores is usually fastest; Q8_0 and Q4_K files are the fastest formats on the CPU.
+
+## Performance
+
+Measured with `solomon bench` (128 tokens) on a MacBook with Apple M4 and 16 GB of memory, with other apps open.
+
+| Model | 0.1.1 tokens/s | 0.1.2 tokens/s | 0.1.2 first token |
+|---|---|---|---|
+| Qwen3-0.6B Q8_0 | 62 | 60 | 0.24 s |
+| Qwen3-1.7B Q4_K_M | 36 | 36 | 0.55 s |
+| Qwen3.5-2B Q4_K_M | 19 | 35–51 | 0.15 s |
+| Qwen2.5-Coder-7B Instruct Q4_K_M | 14.6 | 15.2 | 0.75 s |
+
+Replies are the same as in 0.1.1; only the speed changed.
 
 ## Troubleshooting
 
