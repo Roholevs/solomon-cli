@@ -1,0 +1,72 @@
+==========================================================================
+
+SOLOMON CLI - FREEWARE END USER LICENSE AGREEMENT
+
+Copyright (c) 2026 Roholevs (Solomon). All rights reserved.
+
+This End User License Agreement ("Agreement") is between you and
+Roholevs (Solomon) ("Licensor") and covers the Solomon CLI software,
+including its binaries, documentation and updates (the "Software").
+By downloading, installing or using the Software you accept this Agreement.
+If you do not accept it, do not use the Software.
+
+1. LICENSE GRANT. Licensor grants you a free, non-exclusive,
+   non-transferable, non-sublicensable, revocable license to install and use
+   the Software on devices you own or control, for personal or commercial
+   purposes, under the terms of this Agreement.
+
+2. RESTRICTIONS. Except where applicable law expressly allows it despite
+   this restriction, you may not:
+   (a) copy (except as needed to use the Software and for backup), sell,
+       rent, lease, lend, sublicense, distribute, publish, host or otherwise
+       make the Software available to third parties, including by bundling
+       it with other software or packages, without Licensor's prior written
+       permission. Links to the official download page are allowed;
+   (b) modify, adapt, translate or create derivative works of the Software;
+   (c) reverse engineer, decompile, disassemble or otherwise try to derive
+       the source code, algorithms, models or internal structure of the
+       Software;
+   (d) remove or change any proprietary notices or labels;
+   (e) use the Software in breach of applicable laws.
+
+3. OWNERSHIP. The Software is licensed, not sold. Licensor and its licensors
+   keep all rights, title and interest in the Software, including all
+   intellectual property rights. All rights not expressly granted are
+   reserved.
+
+4. THIRD-PARTY MODELS AND CONTENT. The Software runs model files that you
+   obtain yourself. Those models are governed by their own licenses, which
+   you are responsible for following. Licensor is not responsible for
+   third-party models or for any output they generate.
+
+5. PRIVACY. The Software runs locally and does not send your data to
+   Licensor.
+
+6. NO WARRANTY. THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT
+   WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY AND
+   NON-INFRINGEMENT. AI-GENERATED OUTPUT MAY BE INACCURATE.
+
+7. LIMITATION OF LIABILITY. TO THE MAXIMUM EXTENT PERMITTED BY LAW, LICENSOR
+   IS NOT LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR
+   PUNITIVE DAMAGES, OR FOR LOSS OF DATA, PROFITS OR BUSINESS, ARISING OUT
+   OF OR RELATED TO THE SOFTWARE. LICENSOR'S TOTAL LIABILITY SHALL NOT
+   EXCEED [USD 0 / THE AMOUNT YOU PAID FOR THE SOFTWARE].
+
+8. TERMINATION. This Agreement ends automatically if you breach it. When it
+   ends, you must stop using the Software and delete all copies.
+
+9. UPDATES AND CHANGES. Licensor may update, change or discontinue the
+   Software at any time and may update this Agreement. The version that
+   ships with a release applies to that release.
+
+10. EXPORT. You must comply with all applicable export control laws.
+
+11. GOVERNING LAW. This Agreement is governed by the laws of Ukraine,
+    and disputes go to the courts of Ukraine, unless mandatory consumer
+    protection law provides otherwise.
+
+12. ENTIRE AGREEMENT. This is the entire agreement about the Software. If
+    any provision is unenforceable, the rest stays in effect.
+
+Contact: https://github.com/Roholevs/solomon-cli/issues
