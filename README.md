@@ -19,7 +19,7 @@
 | | |
 |---|---|
 | macOS | Apple Silicon (M1, M2, M3, M4 or later), macOS 14 Sonoma or newer. Intel Macs are not supported. |
-| Linux | x86_64 or arm64 (aarch64), glibc 2.39 or newer (Ubuntu 24.04+, Debian 13+, Fedora 40+ or similar) |
+| Linux | x86_64 or arm64 (aarch64), glibc 2.28 or newer (Ubuntu 20.04+, Debian 10+, RHEL/Rocky 8+ or similar) |
 | Windows | Windows 10 or 11, x86_64 |
 | x86_64 CPU | must support **AVX2** and FMA (Intel Haswell 2013+ / AMD Zen 2017+) |
 | Memory | 8 GB minimum; 16 GB or more recommended for mid-size models |
@@ -36,7 +36,7 @@
 
 On Linux and Windows the CLI runs on the CPU for now, so it is slower than on a Mac with the same model; small models (0.5B–4B) work well. GPU acceleration on Linux and Windows is planned. Commands, options and output are the same on every platform.
 
-> **Release status:** version 0.1.0 ships for **macOS (Apple Silicon)**. Linux and Windows builds are coming in the next release.
+> **Release status:** since 0.1.1 there are builds for macOS (Apple Silicon), Linux (x86_64, arm64) and Windows (x86_64). Linux and Windows builds are new; please report any problems in Issues.
 
 ## Install
 
@@ -254,7 +254,7 @@ $ solomon model-info --file Qwen3-0.6B-Q8_0.gguf
 
 **Is the source code available?** No. Solomon is proprietary software; only the binaries are published.
 
-**Windows / Linux?** Coming in the next release (x86_64 Linux and Windows, arm64 Linux). Intel Macs are not supported.
+**Windows / Linux?** Yes, since 0.1.1: x86_64 Linux and Windows, and arm64 Linux (CPU for now). Intel Macs are not supported.
 
 **Can it use my GPU?** On Macs, yes, the Apple GPU is used automatically. On Linux and Windows it runs on the CPU for now; GPU support there is planned.
 
