@@ -1,6 +1,12 @@
 # Solomon CLI
 
-**Fast, private AI on your own computer.** Solomon CLI runs open-source AI chat models directly on your Mac, Linux PC or Windows PC. No account, no cloud, no internet connection needed.
+**Bigger AI models on smaller computers. One tiny file. No install. Nothing leaves your machine.**
+
+- **Run models that don't fit:** `solomon optimize` makes a large model smaller and faster on your computer. A 35B model that llama.cpp could not run on a 16 GB Mac answers at ~11 tokens/s.
+- **One tiny file:** a single binary of under 1 MB (about 0.3–0.4 MB to download). Nothing to install, no Python, no dependencies.
+- **Nothing leaves your machine:** the program has zero network code. No account, no cloud, no telemetry.
+- **Fast without tuning:** speed settings are picked automatically for each model, and a memory check runs before a model loads.
+- **Mac, Linux and Windows:** the Apple GPU on Macs, the CPU on Linux and Windows.
 
 *Українською: [README.uk.md](README.uk.md)*
 
@@ -11,15 +17,50 @@
 - Chat with a local AI model in your terminal
 - One-shot text completion that works in shell scripts and pipes
 - A built-in speed benchmark
+- `solomon optimize`: makes a large model smaller and faster on your computer, so models that would not fit in memory can run well
 - Uses the Apple GPU automatically on Macs; runs on the CPU on Linux and Windows
 - **100% local**: your prompts and answers never leave your computer
+
+## Speed compared with llama.cpp
+
+Only the cases where Solomon is faster, or where llama.cpp cannot run the model, are listed. Median of 3 runs after a warm-up run.
+
+| Model | Test | llama.cpp | Solomon CLI 0.2.0 |
+|---|---|---|---|
+| Qwen3.6-35B-A3B UD-Q4_K_M (20.6 GB) | reply speed on a 16 GB Mac | **does not run** (stops with "Insufficient Memory") | **11 tokens/s** with the optimized copy (11.7 GB), also in a chat with a ~560-token first message |
+| Qwen2.5-Coder-7B Instruct Q4_K_M | summary of a ~340-token text, 256 tokens | 21.8 tokens/s | **27.5 tokens/s** (same file); **47.5 tokens/s** with the optimized copy* |
+| Qwen2.5-Coder-7B Instruct Q4_K_M | reply speed, short prompt | 22.5 tokens/s | **30.5 tokens/s** with the optimized copy* |
+| Qwen3.5-2B Q4_K_M | reply speed, 128 tokens | 63.8 tokens/s | **65.8 tokens/s** |
+
+Measured on 25 November 2026 on a MacBook Air with Apple M4 and 16 GB of memory, macOS 26.6, on AC power, with no other heavy apps running and all models on the internal disk. llama.cpp build 12359 (Homebrew). *The optimized copy is a smaller file made by `solomon optimize`; its answers stay close to the original but can differ in wording.
+
+How to reproduce:
+
+```sh
+# llama.cpp
+llama-bench -m Qwen3.5-2B-Q4_K_M.gguf -p 512 -n 128 -r 1
+llama-bench -m Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf -p 512 -n 128 -r 1
+llama-completion -m Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf -f summary.txt -n 256 --temp 0 -no-cnv
+llama-bench -m Qwen3.6-35B-A3B-UD-Q4_K_M.gguf -p 0 -n 32 -r 1
+
+# Solomon CLI
+solomon bench --file Qwen3.5-2B-Q4_K_M.gguf --count 128
+solomon bench --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf --prompt-file summary.txt --count 256
+solomon optimize --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+solomon bench --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.solomon --count 128
+solomon bench --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.solomon --prompt-file summary.txt --count 256
+solomon optimize --file Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+solomon bench --file Qwen3.6-35B-A3B-UD-Q4_K_M.solomon --count 128
+```
+
+`summary.txt` is "Summarize the following text in 5 bullet points:" followed by the first paragraphs of the Wikipedia article "Industrial Revolution" (about 340 tokens in all).
 
 ## Requirements
 
 | | |
 |---|---|
 | macOS | Apple Silicon (M1, M2, M3, M4 or later), macOS 14 Sonoma or newer. Intel Macs are not supported. |
-| Linux | x86_64 or arm64 (aarch64), glibc 2.28 or newer (Ubuntu 20.04+, Debian 10+, RHEL/Rocky 8+ or similar) |
+| Linux | x86_64 or arm64 (aarch64), glibc 2.39 or newer (Ubuntu 24.04+, Debian 13+, Fedora 40+ or similar) |
 | Windows | Windows 10 or 11, x86_64 |
 | x86_64 CPU | must support **AVX2** and FMA (Intel Haswell 2013+ / AMD Zen 2017+) |
 | Memory | 8 GB minimum; 16 GB or more recommended for mid-size models |
@@ -36,7 +77,6 @@
 
 On Linux and Windows the CLI runs on the CPU for now, so it is slower than on a Mac with the same model; small models (0.5B–4B) work well. GPU acceleration on Linux and Windows is planned. Commands, options and output are the same on every platform.
 
-> **Release status:** since 0.1.1 there are builds for macOS (Apple Silicon), Linux (x86_64, arm64) and Windows (x86_64). Linux and Windows builds are new; please report any problems in Issues.
 
 ## Install
 
@@ -146,7 +186,7 @@ Run `solomon help` for an overview and `solomon <command> --help` for details. E
 Interactive chat in the terminal. Type a message and press Enter; the reply streams as it is generated. The conversation is remembered until you type `/reset`.
 
 ```
-solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--memory-mib N] [--thinking show|hide]
+solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--memory-mib N]
 ```
 
 | Option | Default | Meaning |
@@ -154,7 +194,7 @@ solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--m
 | `--file` | (required) | Path to the `.gguf` model |
 | `--context` | 8192 | How much of the conversation (in tokens) the model can see |
 | `--max-tokens` | 1024 | Longest reply, in tokens (max 8192) |
-| `--threads` | auto | CPU threads (`auto` = performance cores, or 1–32) |
+| `--threads` | auto | CPU threads (1–32), or `auto` = the number of performance cores |
 | `--memory-mib` | 512 | Memory reserved for the conversation, in MiB |
 
 In-chat commands: `/reset` clears the conversation; `/exit`, `/quit` or Ctrl-D quits.
@@ -164,7 +204,7 @@ You can also pipe messages in, one per line:
 printf 'Write a haiku about the sea\n/exit\n' | solomon chat --file model.gguf --max-tokens 200
 ```
 
-Some models (for example Qwen3) "think out loud" first. Solomon hides that reasoning by default; add `--thinking show` to see it. For Qwen3 you can also add `/no_think` to the end of a message to skip it.
+Some models (for example Qwen3) "think out loud" first, inside `<think>…</think>`. For Qwen3 you can add `/no_think` to the end of a message to skip that.
 
 ### `solomon complete`
 
@@ -204,6 +244,19 @@ $ solomon bench --file Qwen3-0.6B-Q8_0.gguf --count 64
 ```
 Fields: model load time, time to the first token, tokens generated, generation speed and total time.
 
+### `solomon optimize`
+
+Makes a model smaller and faster on this computer; answer quality stays close to the original. See [Optimize a model](#optimize-a-model).
+
+```
+solomon optimize --file MODEL.gguf [--out PATH]
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--file` | (required) | The model to optimize (left unchanged) |
+| `--out` | next to the model, `NAME.solomon` | Where to write the optimized copy |
+
 ### `solomon model-info`
 
 Checks that a file is a readable GGUF model and prints basic facts.
@@ -218,29 +271,49 @@ $ solomon model-info --file Qwen3-0.6B-Q8_0.gguf
 - `solomon help` and `solomon help <command>` print help.
 - The exit code is `0` on success and `1` on error. Errors go to stderr as `Error: ...`.
 
+## Optimize a model
+
+Large models are often too big for your computer's memory, and then they run slowly or not at all. `solomon optimize` writes a smaller copy of the model that is tuned to run on this computer. The original file is not changed.
+
+```sh
+$ solomon optimize --file ~/Models/Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+Optimizing Qwen3.6-35B-A3B-UD-Q4_K_M.gguf for this computer...
+Size: 20.6 GB -> ~11.7 GB
+[##############################] 100%  ETA 00:00
+Done in 01:20: 20.6 GB -> 11.7 GB
+```
+
+Then use the new file like any model, with `chat`, `complete` and `bench`:
+
+```sh
+solomon chat --file ~/Models/Qwen3.6-35B-A3B-UD-Q4_K_M.solomon
+```
+
+- **Best for large models** (3 GB and up), especially ones that are big compared with your memory. Smaller models already run well and are left as they are.
+- **Quality stays close to the original.** Answers can differ slightly in wording.
+- **Uses little memory** while it works and shows progress with the time left. You need free disk space for the new file; Solomon checks this first.
+- When you start `solomon chat` with a large model, it tells you if optimizing would help, or if an optimized copy is already next to it.
+- Single-file models only for now.
+
+| Model | Before | After | Speed before | Speed after |
+|---|---|---|---|---|
+| Qwen3.6-35B-A3B UD-Q4_K_M | 20.6 GB | 11.7 GB | does not fit in 16 GB* | 11 tokens/s |
+| Qwen2.5-Coder-7B Instruct Q4_K_M | 4.4 GB | 2.8 GB | 21.5 tokens/s | 30.5 tokens/s |
+
+Measured on a MacBook Air with Apple M4 and 16 GB of memory, with the model on the internal disk. When an optimized model fits in memory, Solomon reads it in fully before the first answer ("Loading model... 45%"), so replies don't wait on the disk. *llama.cpp stopped with "Insufficient Memory" on the original 35B model.
+
 ## Performance tips
 
-- **Automatic memory check.** Before loading, Solomon compares what the model needs with the free memory. If it fits, the model is loaded fully into memory for the best speed; if memory is tight, it prints a short note and reads the model from disk as needed.
+- **Automatic memory check.** Before loading, Solomon compares what the model needs with the free memory. If it fits, the model is loaded fully into memory for the best speed; if memory is tight, it prints a short note (for example *"this model needs ~6.1 GB of memory, ~4.0 GB available; close other apps for best speed"*) and reads the model from disk as needed instead.
+
+- **Keep models on the internal disk.** External USB drives are much slower to read; a model loads and answers faster from the computer's own disk.
 - **Choose the model size for your memory.** A model that doesn't fit in RAM still runs, but it slows down a lot. Keep the model file under about 60% of your computer's memory.
 - **Close memory-hungry apps** (browsers with many tabs, VMs) before you run large models.
 - **Smaller file variants are faster.** If generation is slow, try a smaller variant or a smaller model.
 - The **first run after a download is slower** while macOS reads the file into its cache.
 - If you only need short chats, a lower `--context` saves memory.
 - Use `solomon bench` to compare models on your computer.
-- On Linux and Windows (CPU), `--threads` set to the number of *physical* cores is usually fastest; Q8_0 and Q4_K files are the fastest formats on the CPU.
-
-## Performance
-
-Measured with `solomon bench` (128 tokens) on a MacBook with Apple M4 and 16 GB of memory, with other apps open.
-
-| Model | 0.1.1 tokens/s | 0.1.2 tokens/s | 0.1.2 first token |
-|---|---|---|---|
-| Qwen3-0.6B Q8_0 | 62 | 60 | 0.24 s |
-| Qwen3-1.7B Q4_K_M | 36 | 36 | 0.55 s |
-| Qwen3.5-2B Q4_K_M | 19 | 35–51 | 0.15 s |
-| Qwen2.5-Coder-7B Instruct Q4_K_M | 14.6 | 15.2 | 0.75 s |
-
-Replies are the same as in 0.1.1; only the speed changed.
+- On Linux and Windows (CPU), the default `--threads auto` (the number of performance cores) is usually fastest; Q8_0 and Q4_K files are the fastest formats on the CPU.
 
 ## Troubleshooting
 
@@ -268,7 +341,7 @@ Replies are the same as in 0.1.1; only the speed changed.
 
 **Is the source code available?** No. Solomon is proprietary software; only the binaries are published.
 
-**Windows / Linux?** Yes, since 0.1.1: x86_64 Linux and Windows, and arm64 Linux (CPU for now). Intel Macs are not supported.
+**Windows / Linux?** Yes: x86_64 Linux and Windows, and arm64 Linux. Intel Macs are not supported.
 
 **Can it use my GPU?** On Macs, yes, the Apple GPU is used automatically. On Linux and Windows it runs on the CPU for now; GPU support there is planned.
 
