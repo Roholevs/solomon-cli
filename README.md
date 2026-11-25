@@ -164,7 +164,7 @@ You can also pipe messages in, one per line:
 printf 'Write a haiku about the sea\n/exit\n' | solomon chat --file model.gguf --max-tokens 200
 ```
 
-Some models (for example Qwen3) "think out loud" first, inside `<think>…</think>`. For Qwen3 you can add `/no_think` to the end of a message to skip that.
+Some models (for example Qwen3) "think out loud" first. Solomon hides that reasoning by default; add `--thinking show` to see it. For Qwen3 you can also add `/no_think` to the end of a message to skip it.
 
 ### `solomon complete`
 
