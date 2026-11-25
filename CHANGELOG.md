@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+- Much shorter wait for the first token on long prompts with large mixture-of-experts models on Apple GPUs (up to ~4x in our tests).
+- Faster first reply after a long prompt on those models.
+- Loading a model fully into memory no longer keeps a second copy, so it uses less memory and pushes other apps into swap less.
+
 ## 0.1.2
 - Faster: the CLI now picks the best speed settings for each model automatically (up to ~2.5x faster on Qwen3.5 models on Apple GPUs, much shorter wait for the first token). Replies are unchanged.
 - Automatic memory check before loading: models that fit are loaded fully into memory; when memory is tight a short note suggests closing other apps.
