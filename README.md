@@ -2,7 +2,7 @@
 
 **Bigger AI models on smaller computers. One tiny file. No install. Nothing leaves your machine.**
 
-- **Run models that don't fit:** `solomon optimize` makes a large model smaller and faster on your computer. A 35B model that llama.cpp could not run on a 16 GB Mac answers at ~11 tokens/s.
+- **Run models that don't fit:** `solomon optimize` makes a large model smaller and faster on your computer. A 35B model that llama.cpp could not run on a 16 GB Mac answers at ~20 tokens/s.
 - **One tiny file:** a single binary of under 1 MB (about 0.3–0.4 MB to download). Nothing to install, no Python, no dependencies.
 - **Nothing leaves your machine:** the program has zero network code. No account, no cloud, no telemetry.
 - **Fast without tuning:** speed settings are picked automatically for each model, and a memory check runs before a model loads.
@@ -25,14 +25,13 @@
 
 Only the cases where Solomon is faster, or where llama.cpp cannot run the model, are listed. Median of 3 runs after a warm-up run.
 
-| Model | Test | llama.cpp | Solomon CLI 0.2.0 |
+| Model | Test | llama.cpp | Solomon CLI 0.2.1 |
 |---|---|---|---|
-| Qwen3.6-35B-A3B UD-Q4_K_M (20.6 GB) | reply speed on a 16 GB Mac | **does not run** (stops with "Insufficient Memory") | **11 tokens/s** with the optimized copy (11.7 GB), also in a chat with a ~560-token first message |
-| Qwen2.5-Coder-7B Instruct Q4_K_M | summary of a ~340-token text, 256 tokens | 21.8 tokens/s | **27.5 tokens/s** (same file); **47.5 tokens/s** with the optimized copy* |
-| Qwen2.5-Coder-7B Instruct Q4_K_M | reply speed, short prompt | 22.5 tokens/s | **30.5 tokens/s** with the optimized copy* |
+| Qwen3.6-35B-A3B UD-Q4_K_M (20.6 GB) | reply speed on a 16 GB Mac | **does not run** (stops with "Insufficient Memory") | **20 tokens/s** with the optimized copy (11.7 GB), also in a chat with a ~860-token first message |
+| Qwen2.5-Coder-7B Instruct Q4_K_M | summary of a ~340-token text, 256 tokens | 21.8 tokens/s | **27.5 tokens/s** (same file) |
 | Qwen3.5-2B Q4_K_M | reply speed, 128 tokens | 63.8 tokens/s | **65.8 tokens/s** |
 
-Measured on 25 November 2026 on a MacBook Air with Apple M4 and 16 GB of memory, macOS 26.6, on AC power, with no other heavy apps running and all models on the internal disk. llama.cpp build 12359 (Homebrew). *The optimized copy is a smaller file made by `solomon optimize`; its answers stay close to the original but can differ in wording.
+Measured on 25 November 2026 (35B row: 26 November 2026, Solomon CLI 0.2.1) on a MacBook Air with Apple M4 and 16 GB of memory, macOS 26.6, on AC power, with no other heavy apps running and all models on the internal disk. llama.cpp build 12359 (Homebrew). *The optimized copy is a smaller file made by `solomon optimize`; its answers stay close to the original but can differ in wording.
 
 How to reproduce:
 
@@ -50,7 +49,7 @@ solomon optimize --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
 solomon bench --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.solomon --count 128
 solomon bench --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.solomon --prompt-file summary.txt --count 256
 solomon optimize --file Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
-solomon bench --file Qwen3.6-35B-A3B-UD-Q4_K_M.solomon --count 128
+solomon bench --file Qwen3.6-35B-A3B-UD-Q4_K_M.solomon --prompt "Write a 300-word story about a lighthouse keeper who finds a message in a bottle." --count 512
 ```
 
 `summary.txt` is "Summarize the following text in 5 bullet points:" followed by the first paragraphs of the Wikipedia article "Industrial Revolution" (about 340 tokens in all).
@@ -187,6 +186,7 @@ Interactive chat in the terminal. Type a message and press Enter; the reply stre
 
 ```
 solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--memory-mib N]
+             [--temperature T] [--top-p P] [--repeat-penalty R] [--seed N]
 ```
 
 | Option | Default | Meaning |
@@ -196,6 +196,15 @@ solomon chat --file MODEL.gguf [--context N] [--max-tokens N] [--threads N] [--m
 | `--max-tokens` | 1024 | Longest reply, in tokens (max 8192) |
 | `--threads` | auto | CPU threads (1–32), or `auto` = the number of performance cores |
 | `--memory-mib` | 512 | Memory reserved for the conversation, in MiB |
+| `--temperature` | 0.7 | Creativity, 0–5. `0` always picks the most likely word (same reply every time) |
+| `--top-p` | 0.9 | Picks only among the most likely words that together reach this share |
+| `--top-k` | 0 (off) | Picks only among the N most likely words |
+| `--min-p` | 0 (off) | Skips words less than this share as likely as the best one |
+| `--repeat-penalty` | 1.1 | Discourages repeating words from the last 256 tokens (`1` = off; `--repeat-window N` changes the 256) |
+| `--seed` | random | Same seed + same input = same reply |
+
+A reply that starts repeating the same block over and over is stopped automatically.
+`solomon bench` accepts the same `--temperature`, `--top-p`, `--repeat-penalty` and `--seed` options.
 
 In-chat commands: `/reset` clears the conversation; `/exit`, `/quit` or Ctrl-D quits.
 
@@ -297,8 +306,7 @@ solomon chat --file ~/Models/Qwen3.6-35B-A3B-UD-Q4_K_M.solomon
 
 | Model | Before | After | Speed before | Speed after |
 |---|---|---|---|---|
-| Qwen3.6-35B-A3B UD-Q4_K_M | 20.6 GB | 11.7 GB | does not fit in 16 GB* | 11 tokens/s |
-| Qwen2.5-Coder-7B Instruct Q4_K_M | 4.4 GB | 2.8 GB | 21.5 tokens/s | 30.5 tokens/s |
+| Qwen3.6-35B-A3B UD-Q4_K_M | 20.6 GB | 11.7 GB | does not fit in 16 GB* | 20 tokens/s |
 
 Measured on a MacBook Air with Apple M4 and 16 GB of memory, with the model on the internal disk. When an optimized model fits in memory, Solomon reads it in fully before the first answer ("Loading model... 45%"), so replies don't wait on the disk. *llama.cpp stopped with "Insufficient Memory" on the original 35B model.
 

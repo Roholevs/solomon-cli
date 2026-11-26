@@ -2,6 +2,14 @@
 
 All notable changes to Solomon CLI are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.2.1]
+
+- Much faster large mixture-of-experts models on Apple GPUs: an optimized 35B model now generates about 20 tokens/s on a 16 GB Mac (was about 11-13), because replies are generated on the GPU too.
+- Varied, natural replies: tokens are now sampled instead of always taking the single most likely one. New options for `chat` and `bench`: `--temperature` (default 0.7; `0` = the old always-most-likely behaviour), `--top-p` (0.9), `--top-k`, `--min-p`, `--repeat-penalty` (1.1 over the last 256 tokens, `--repeat-window`), `--seed` for repeatable replies.
+- Replies no longer get stuck repeating the same lines until the length limit: such loops are much rarer with the new defaults, and a reply that starts repeating one block over and over is stopped automatically.
+- `chat` keeps the whole conversation that fits in `--context` (was about 1,000 tokens of earlier turns); after a very long reply, a follow-up still sees a shortened copy of it instead of losing it.
+- The first reply streams at full speed from its first token: the GPU warms up while the model loads.
+
 ## [0.2.0]
 
 - New `solomon optimize --file MODEL.gguf`: makes a large model smaller and faster on this computer, with answer quality close to the original. Large models that did not fit in memory can now run (for example a 35B model: 20.6 GB to 11.7 GB). Shows progress with the time left, uses little memory, and checks free disk space first.
