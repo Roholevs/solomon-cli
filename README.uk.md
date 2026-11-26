@@ -12,6 +12,10 @@
 
 > Solomon CLI **безкоштовний** і має **закритий код**. Тут лише документація, релізи та трекер задач. Умови описано в [LICENSE](LICENSE).
 
+## Підключення до Claude Code, Codex, OpenCode, Cursor
+
+Попросіть асистента: **«встанови навичку solomon-setup з github.com/Roholevs/solomon-integrations»** — він встановить CLI, дасть вибрати моделі й усе підключить. У Claude Code також: `/plugin marketplace add Roholevs/solomon-integrations`.
+
 ## Швидкість порівняно з llama.cpp
 
 Наведено лише випадки, де Solomon швидший або де llama.cpp не може запустити модель. Медіана 3 запусків після прогрівального.

@@ -12,6 +12,10 @@
 
 > Solomon CLI is **free to use** and **closed source**. This repository has the documentation, release downloads and issue tracker only. See [LICENSE](LICENSE).
 
+## Use it in Claude Code, Codex, OpenCode, Cursor
+
+Ask your assistant: **"install the solomon-setup skill from github.com/Roholevs/solomon-integrations"** — it installs the CLI, lets you pick your models and connects everything. In Claude Code you can also run `/plugin marketplace add Roholevs/solomon-integrations`. See [Roholevs/solomon-integrations](https://github.com/Roholevs/solomon-integrations).
+
 ## Features
 
 - Chat with a local AI model in your terminal
