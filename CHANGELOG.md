@@ -2,6 +2,12 @@
 
 All notable changes to Solomon CLI are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.3.0]
+
+- New `solomon serve`: a local OpenAI-compatible API (`/v1/chat/completions` with streaming and tool calling, `/v1/completions`, `/v1/models`) for coding agents, editors and scripts. Listens on 127.0.0.1 by default; optional `--api-key`; requests from web pages on other sites are refused. The conversation cache is kept between requests, so an agent resending its history gets its first token quickly, and `--slots N` keeps several conversations cached at once. Requests may set `temperature`, `top_p`, `top_k`, `min_p`, penalties and `seed`.
+- New `solomon mcp`: an MCP server over standard input/output with the tools `ask`, `summarize`, `chat` and `complete`, so Claude Desktop, Claude Code, Cursor and other MCP clients can use the local model. The model loads on the first call; cancelled calls stop generating.
+- `serve` is the only command that opens a network port; the CLI still never connects anywhere.
+
 ## [0.2.1]
 
 - Much faster large mixture-of-experts models on Apple GPUs: an optimized 35B model now generates about 20 tokens/s on a 16 GB Mac (was about 11-13), because replies are generated on the GPU too.

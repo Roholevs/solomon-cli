@@ -3,8 +3,8 @@
 **Bigger AI models on smaller computers. One tiny file. No install. Nothing leaves your machine.**
 
 - **Run models that don't fit:** `solomon optimize` makes a large model smaller and faster on your computer. A 35B model that llama.cpp could not run on a 16 GB Mac answers at ~20 tokens/s.
-- **One tiny file:** a single binary of under 1 MB (about 0.3–0.4 MB to download). Nothing to install, no Python, no dependencies.
-- **Nothing leaves your machine:** the program has zero network code. No account, no cloud, no telemetry.
+- **One tiny file:** a single binary of about 1 MB (0.4–0.55 MB to download). Nothing to install, no Python, no dependencies.
+- **Nothing leaves your machine:** the program never connects anywhere. No account, no cloud, no telemetry. (`solomon serve` opens a local port that you start yourself.)
 - **Fast without tuning:** speed settings are picked automatically for each model, and a memory check runs before a model loads.
 - **Mac, Linux and Windows:** the Apple GPU on Macs, the CPU on Linux and Windows.
 
@@ -18,6 +18,8 @@
 - One-shot text completion that works in shell scripts and pipes
 - A built-in speed benchmark
 - `solomon optimize`: makes a large model smaller and faster on your computer, so models that would not fit in memory can run well
+- `solomon serve`: a local OpenAI-compatible API (streaming, tool calling) for coding agents and editors
+- `solomon mcp`: lets Claude Desktop, Claude Code, Cursor and other MCP clients use your local model as a tool
 - Uses the Apple GPU automatically on Macs; runs on the CPU on Linux and Windows
 - **100% local**: your prompts and answers never leave your computer
 
@@ -266,6 +268,88 @@ solomon optimize --file MODEL.gguf [--out PATH]
 | `--file` | (required) | The model to optimize (left unchanged) |
 | `--out` | next to the model, `NAME.solomon` | Where to write the optimized copy |
 
+### `solomon serve`
+
+A local OpenAI-compatible API, so coding agents, editors and scripts that speak the OpenAI API (OpenCode, Aider, Continue, Cline, Cursor, the `openai` Python package...) can use your local model. This is the only command that opens a network port, and it listens on `127.0.0.1` (this computer only) unless you pass `--host`.
+
+```
+solomon serve --file MODEL.gguf [--port 8080] [--host 127.0.0.1] [--api-key KEY] [--context N] [--slots N]
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--port` | 8080 | Port to listen on |
+| `--host` | 127.0.0.1 | Address to listen on (`0.0.0.0` = every network; use with `--api-key`) |
+| `--api-key` | none | Require `Authorization: Bearer KEY` on every request |
+| `--name` | the file name | Model name shown by `/v1/models` (any name is accepted in requests) |
+| `--context` | 32768 | Context window in tokens |
+| `--max-tokens` | 4096 | Reply limit when a request gives none (max 8192) |
+| `--memory-mib` | 2048 | Memory for the conversation cache, per slot, in MiB |
+| `--slots` | 1 | Separate conversation caches (1–8). A request goes to the slot holding the longest matching history, so an agent's side requests (titles, summaries) do not push out its main conversation |
+| `--temperature`, `--top-p`, `--top-k`, `--min-p`, `--repeat-penalty`, `--seed` | 0.7, 0.9, off, off, 1 (off), random | Defaults when a request gives none |
+
+Endpoints: `GET /v1/models`, `POST /v1/chat/completions` (streaming, tools / function calling), `POST /v1/completions`. Requests may set `temperature`, `top_p`, `top_k`, `min_p`, `presence_penalty`, `frequency_penalty`, `repeat_penalty`, `seed`, `stop` and `max_tokens`. Requests are answered one at a time; the conversation cache is kept between requests, so an agent that resends its whole history does not wait for it to be read again.
+
+```sh
+solomon serve --file Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf --port 8080
+curl http://127.0.0.1:8080/v1/chat/completions -H 'Content-Type: application/json' \
+  -d '{"model":"local","messages":[{"role":"user","content":"Hello"}]}'
+```
+
+With the `openai` Python package:
+```python
+from openai import OpenAI
+client = OpenAI(base_url="http://127.0.0.1:8080/v1", api_key="local")
+print(client.chat.completions.create(model="local", messages=[{"role": "user", "content": "Hello"}]).choices[0].message.content)
+```
+
+In other tools, choose an "OpenAI-compatible" provider with the base URL `http://127.0.0.1:8080/v1` and any API key (or the one you set with `--api-key`).
+
+### `solomon mcp`
+
+An MCP (Model Context Protocol) server over standard input/output, so Claude Desktop, Claude Code, Cursor and other MCP clients can use your local model as a tool, for example for private drafts and summaries or a second opinion. It opens no network port. The model loads on the first tool call, so an idle client costs no memory.
+
+```
+solomon mcp --file MODEL.gguf [--context N] [--max-tokens N] [--preload on]
+```
+
+Tools:
+
+| Tool | Arguments | What it does |
+|---|---|---|
+| `ask` | `prompt`, optional `system`, `max_tokens`, `temperature` | One prompt, one reply |
+| `summarize` | `text`, optional `focus`, `max_words` | Summary of a text |
+| `chat` | `messages` (`role`, `content`), optional `system`, `max_tokens`, `temperature` | Next reply in a conversation; a repeated history is reused from the cache |
+| `complete` | `prompt`, optional `max_tokens`, `temperature`, `stop` | Raw text continuation (for example code) |
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--context` | 16384 | Context window in tokens |
+| `--max-tokens` | 1024 | Reply limit when a call gives none (max 8192) |
+| `--memory-mib` | 1024 | Memory for the conversation cache, in MiB |
+| `--system` | none | System instruction used when a call gives none |
+| `--preload` | off | `on` loads the model at start instead of on the first call |
+
+The sampling options of `chat` (`--temperature`, `--top-p`, ...) set the defaults.
+
+Claude Desktop (`claude_desktop_config.json`; Settings → Developer → Edit Config) and Cursor (`~/.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "solomon": {
+      "command": "/full/path/to/solomon",
+      "args": ["mcp", "--file", "/full/path/to/MODEL.gguf"]
+    }
+  }
+}
+```
+On Windows use paths like `"C:\\Tools\\solomon.exe"`.
+
+Claude Code:
+```sh
+claude mcp add solomon -- /full/path/to/solomon mcp --file /full/path/to/MODEL.gguf
+```
+
 ### `solomon model-info`
 
 Checks that a file is a readable GGUF model and prints basic facts.
@@ -358,7 +442,7 @@ Measured on a MacBook Air with Apple M4 and 16 GB of memory, with the model on t
 ## Privacy
 
 Solomon CLI runs **entirely on your computer**:
-- no network connections (the binary contains no networking code, and it works with network access blocked)
+- no outgoing network connections (it works with network access blocked). The only network code is `solomon serve`, which listens for requests on this computer (`127.0.0.1`) unless you choose another address; `solomon mcp` talks to its client over standard input/output only
 - no telemetry, analytics or crash reporting
 - no account or sign-in
 - it reads only the model file you pass it, and it writes nothing to disk
