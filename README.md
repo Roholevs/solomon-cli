@@ -350,6 +350,20 @@ Claude Code:
 claude mcp add solomon -- /full/path/to/solomon mcp --file /full/path/to/MODEL.gguf
 ```
 
+**Sharing one loaded model.** Instead of loading its own copy, `solomon mcp` can forward every tool call to a server that already holds the model, so a 10 GB model sits in memory once:
+
+| Option | Meaning |
+|---|---|
+| `--server URL` | Forward calls to a running OpenAI-compatible server, e.g. `http://127.0.0.1:8080` (`solomon serve`); plain `http` only. `--api-key KEY` if the server needs one |
+| `--engine auto` | Use the Solomon app's shared engine when it runs (address and key from `~/Library/Application Support/Solomon/engine.json`) |
+
+With `--file` as well, the model is loaded here only while the server is not running, and freed again as soon as the server answers. Without `--file`, calls fail with a clear message while no server runs.
+
+```sh
+claude mcp add solomon -- /full/path/to/solomon mcp --engine auto --file /full/path/to/MODEL.gguf
+claude mcp add solomon -- /full/path/to/solomon mcp --server http://127.0.0.1:8080 --api-key KEY
+```
+
 ### `solomon model-info`
 
 Checks that a file is a readable GGUF model and prints basic facts.
@@ -442,7 +456,7 @@ Measured on a MacBook Air with Apple M4 and 16 GB of memory, with the model on t
 ## Privacy
 
 Solomon CLI runs **entirely on your computer**:
-- no outgoing network connections (it works with network access blocked). The only network code is `solomon serve`, which listens for requests on this computer (`127.0.0.1`) unless you choose another address; `solomon mcp` talks to its client over standard input/output only
+- no outgoing network connections (it works with network access blocked). The only network code is `solomon serve`, which listens for requests on this computer (`127.0.0.1`) unless you choose another address; `solomon mcp` talks to its client over standard input/output, and with `--server`/`--engine auto` to a server you run (on this computer by default)
 - no telemetry, analytics or crash reporting
 - no account or sign-in
 - it reads only the model file you pass it, and it writes nothing to disk

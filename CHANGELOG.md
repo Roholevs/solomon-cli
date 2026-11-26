@@ -2,6 +2,12 @@
 
 All notable changes to Solomon CLI are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.3.2]
+
+- `solomon mcp --server URL [--api-key KEY]`: forwards tool calls to a running OpenAI-compatible server (for example `solomon serve`) instead of loading a second copy of the model.
+- `solomon mcp --engine auto`: uses the Solomon app's shared engine when it runs (`engine.json`); with `--file` the model is loaded locally only while no server answers, and freed once it answers again.
+- `serve`: a request no longer takes over a slot holding another conversation because of a few shared bytes; it goes to the least recently used slot.
+
 ## [0.3.0]
 
 - New `solomon serve`: a local OpenAI-compatible API (`/v1/chat/completions` with streaming and tool calling, `/v1/completions`, `/v1/models`) for coding agents, editors and scripts. Listens on 127.0.0.1 by default; optional `--api-key`; requests from web pages on other sites are refused. The conversation cache is kept between requests, so an agent resending its history gets its first token quickly, and `--slots N` keeps several conversations cached at once. Requests may set `temperature`, `top_p`, `top_k`, `min_p`, penalties and `seed`.
